@@ -1,6 +1,32 @@
-#include "aes.h"
 #include <cstdint>
 #include <stdio.h>
+#include "aes.h"
+
+const uint8_t SBOX_AFFINE[8][8] =
+{
+    {1,0,0,0,1,1,1,1},
+    {1,1,0,0,0,1,1,1},
+    {1,1,1,0,0,0,1,1},
+    {1,1,1,1,0,0,0,1},
+    {1,1,1,1,1,0,0,0},
+    {0,1,1,1,1,1,0,0},
+    {0,0,1,1,1,1,1,0},
+    {0,0,0,1,1,1,1,1},
+};
+
+const uint8_t SBOX_AFFINE_CONSTV[8] =
+{
+    0,1,1,0,0,0,1,1
+};
+
+void decimalBinary(uint8_t in[16], uint8_t out[16 * 8])
+{
+    for (int i = 0; i < 16; i++) {
+        for (int bit = 0; bit < 8; bit++) {
+            out[i * 8 + bit] = (in[i] >> (7 - bit)) & 1;
+        }
+    }
+}
 
 Key initKey(KeyType type, uint8_t* pValue)
 {
@@ -14,6 +40,7 @@ Key initKey(KeyType type, uint8_t* pValue)
     }
 
     k.pValue = pValue;
+    decimalBinary(pValue, k.pValue);
 
     return k;
 }
@@ -36,7 +63,6 @@ int rotateWord(Key k)
         }
 
         for (int i = 0; i < 16; i++) {
-            k.pValue[i] = pV[i];
         }
 
         return 0;
@@ -56,10 +82,6 @@ void keySchedule(Key k)
     rotateWord(k);
 }
 
-
-
-
-
 int main()
 {
     uint8_t input[16] =
@@ -70,9 +92,23 @@ int main()
         208, 91, 3, 160,
     };
 
+    uint8_t input_bin[16 * 8];
+
+    decimalBinary(input, input_bin);
+
+    for (int i = 0; i < 128; i++) {
+        if (i % 8 == 0) {
+            printf(" ");
+        }
+        if (i % 32 == 0) {
+            printf("\n");
+        }
+        printf("%d", input_bin[i]);
+    }
+
     Key key = initKey(k_128, input);
 
-    printf("== K0 ==========\n");
+    printf("\n== K0 ==========\n");
     for (int i = 0; i < 16; i++) {
         printf(" %d ", key.pValue[i]);
         if ((i + 1) % 4 == 0) {
