@@ -12,7 +12,8 @@ typedef enum {
 
 typedef struct {
     KeyType type;
-    uint8_t* pVal;
+    uint8_t* pValDec;
+    uint8_t* pValBin;
 } Key;
 
 #endif // AES_H

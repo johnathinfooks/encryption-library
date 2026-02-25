@@ -22,14 +22,39 @@ const uint8_t SBOX_AFFINE_CONSTV[8] =
 };
 
 
+void multiplicative_inverse(Key* pK)
+{
+    for (int i = 0; i < 254; i++) 
+    {
+
+    }
+}
 
 
+void rotate(Key* pK)
+{
+    int tmpBin[32];
 
+    for (int i = 0; i < 32; i++)
+    {
+        tmpBin[i] = pK->pValBin[i];
+        pK->pValBin[i] = pK->pValBin[i + 32];
+        pK->pValBin[i + 32] = pK->pValBin[i + 64];
+        pK->pValBin[i + 64] = pK->pValBin[i + 96];
+        pK->pValBin[i + 96] = tmpBin[i];
+    }
 
+    int tmpDec[4];
 
-
-
-
+    for (int i = 0; i < 4; i++)
+    {
+        tmpDec[i] = pK->pValDec[i];
+        pK->pValDec[i] = pK->pValDec[i + 4];
+        pK->pValDec[i + 4] = pK->pValDec[i + 8];
+        pK->pValDec[i + 8] = pK->pValDec[i + 12];
+        pK->pValDec[i + 12] = tmpDec[i];
+    }
+}
 
 void decimalBinary(uint8_t in[16], uint8_t out[16 * 8])
 {
@@ -44,17 +69,20 @@ Key initKey(KeyType type, uint8_t* pDecValue)
 {
     Key k;
     k.type = type;
-    k.pVal = new uint8_t[type];
+    k.pValDec = new uint8_t[type / 8];
+    k.pValBin = new uint8_t[type];
 
-    decimalBinary(pDecValue, k.pVal);
+    std::memcpy(k.pValDec, pDecValue, type / 8);
+    decimalBinary(pDecValue, k.pValBin);
 
     return k;
 }
 
-int terminateKey(Key pKey)
+int terminateKey(Key pK)
 {
-    // delete[] pKey.pVal;
-    // pKey.pVal = nullptr;
+    delete[] pK.pValBin;
+    pK.pValBin = nullptr;
+    pK.pValDec = nullptr;
     return 0;
 }
 
@@ -70,15 +98,73 @@ int main()
 
     Key key = initKey(k_128, input);
 
+    // REPRESENTING THE INFORMATION DURING THE KEY SCHEDULING
+
     printf("== K0\n");
     for (int i = 0; i < 128; i++) {
         if ((i % 32) == 0 && i != 0) {
             printf("\n");
         }
         if ((i % 8) == 0) {
-            printf("\t%3d: ", input[i / 8]);
+            printf("%5d: ", key.pValDec[i / 8]);
         }
-        printf("%d", key.pVal[i]);
+        printf("%d", key.pValBin[i]);
+    }
+    printf("\n==\n");
+
+    rotate(&key);
+
+    printf("== K1\n");
+    for (int i = 0; i < 128; i++) {
+        if ((i % 32) == 0 && i != 0) {
+            printf("\n");
+        }
+        if ((i % 8) == 0) {
+            printf("%5d: ", key.pValDec[i / 8]);
+        }
+        printf("%d", key.pValBin[i]);
+    }
+    printf("\n==\n");
+
+    rotate(&key);
+
+    printf("== K2\n");
+    for (int i = 0; i < 128; i++) {
+        if ((i % 32) == 0 && i != 0) {
+            printf("\n");
+        }
+        if ((i % 8) == 0) {
+            printf("%5d: ", key.pValDec[i / 8]);
+        }
+        printf("%d", key.pValBin[i]);
+    }
+    printf("\n==\n");
+
+    rotate(&key);
+
+    printf("== K3\n");
+    for (int i = 0; i < 128; i++) {
+        if ((i % 32) == 0 && i != 0) {
+            printf("\n");
+        }
+        if ((i % 8) == 0) {
+            printf("%5d: ", key.pValDec[i / 8]);
+        }
+        printf("%d", key.pValBin[i]);
+    }
+    printf("\n==\n");
+
+    rotate(&key);
+
+    printf("== K4\n");
+    for (int i = 0; i < 128; i++) {
+        if ((i % 32) == 0 && i != 0) {
+            printf("\n");
+        }
+        if ((i % 8) == 0) {
+            printf("%5d: ", key.pValDec[i / 8]);
+        }
+        printf("%d", key.pValBin[i]);
     }
     printf("\n==\n");
 
